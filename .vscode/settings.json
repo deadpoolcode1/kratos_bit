@@ -1,0 +1,30 @@
+{
+	"MCONFIG": {
+		/* Target Device Settings */
+		"TARGET_IP": "10.100.102.89",
+
+		/* Project Settings */
+		"PROGRAM": "hello_evb.bin",
+
+		/* Yocto SDK Configuration */
+		"ARCH": "aarch64-simplecoredistro-linux",
+		"OECORE_NATIVE_SYSROOT": "/opt/sc/0.1.0/sm2s-imx8plus/sysroots/x86_64-simplecoredistrosdk-linux",
+		"SDKTARGETSYSROOT": "/opt/sc/0.1.0/sm2s-imx8plus/sysroots/cortexa53-crypto-simplecoredistro-linux",
+
+		/* Yocto SDK Constants */
+		"CC_PREFIX": "${config:MCONFIG.OECORE_NATIVE_SYSROOT}/usr/bin/${config:MCONFIG.ARCH}/${config:MCONFIG.ARCH}-",
+		"CXX": "${config:MCONFIG.CC_PREFIX}g++ --sysroot=${config:MCONFIG.SDKTARGETSYSROOT}",
+		"CC": "${config:MCONFIG.CC_PREFIX}gcc --sysroot=${config:MCONFIG.SDKTARGETSYSROOT}"
+	},
+	"HostPC": {
+		/* Host Device Settings */
+		"TARGET_IP": "127.0.0.1",
+
+		/* Project Settings */
+		"PROGRAM": "hello_host.bin",
+		
+		"CC_PREFIX": "/usr/bin/",
+		"CXX": "${config:HostPC.CC_PREFIX}g++",
+		"CC": "${config:HostPC.CC_PREFIX}gcc"
+	}
+}
