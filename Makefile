@@ -4,13 +4,16 @@ LDFLAGS = -ljsoncpp
 
 all: TestServer TestClient
 
-TestServer: TestServer.o
-	$(CXX) -o TestServer TestServer.o $(LDFLAGS)
+TestServer: main.o TestServer.o
+	$(CXX) -o TestServer main.o TestServer.o $(LDFLAGS)
 
 TestClient: TestClient.o
 	$(CXX) -o TestClient TestClient.o $(LDFLAGS)
 
-TestServer.o: TestServer.cpp
+main.o: main.cpp
+	$(CXX) $(CXXFLAGS) -c main.cpp
+
+TestServer.o: TestServer.cpp TestServer.h
 	$(CXX) $(CXXFLAGS) -c TestServer.cpp
 
 TestClient.o: TestClient.cpp

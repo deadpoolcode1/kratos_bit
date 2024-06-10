@@ -1,119 +1,108 @@
+#include "TestServer.h"
 #include <iostream>
-#include <string>
-#include <unordered_map>
+#include <sstream>
+#include <ctime>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
-#include <ctime>
-#include <json/json.h>
-#include <sstream>  // Include this header for std::istringstream
 
 #define SOCKET_PATH "/tmp/test_socket"
 
-// Function to get the current timestamp
+TestServer::TestServer() {
+    // Initialize default CBIT time
+    cbitTime = 10;
+}
+
+std::string TestServer::handleCommand(const std::string &command) {
+    Json::Value root;
+    Json::CharReaderBuilder readerBuilder;
+    std::string errors;
+    std::istringstream s(command);
+    if (!Json::parseFromStream(readerBuilder, s, &root, &errors)) {
+        return createErrorResponse("Invalid JSON");
+    }
+
+    std::string cmd = root["command"].asString();
+    if (cmd == "READ_LATEST_RESULTS") {
+        return handleReadLatestResults();
+    } else if (cmd == "PERFORM_IBIT") {
+        return handlePerformIBIT();
+    } else if (cmd == "CHANGE_CBIT_TIME") {
+        return handleChangeCBITTime(root);
+    } else if (cmd == "READ_CBIT_TIME") {
+        return handleReadCBITTime();
+    } else {
+        return createErrorResponse("Unknown command");
+    }
+}
+
+std::string TestServer::handleReadLatestResults() {
+    if (latestIbitResults.empty()) {
+        return createErrorResponse("No IBIT results available");
+    }
+    return latestIbitResults;
+}
+
+std::string TestServer::handlePerformIBIT() {
+    // Perform IBIT (stub)
+    Json::Value response;
+    response["status"] = "success";
+    response["results"] = Json::arrayValue;
+    response["results"].append(performTest("I2C"));
+    response["results"].append(performTest("RTC"));
+    response["results"].append(performTest("GPIO"));
+    response["results"].append(performTest("IRQ"));
+    response["results"].append(performTest("UART"));
+    response["results"].append(performTest("SPI"));
+    response["results"].append(performTest("RGMII"));
+    response["results"].append(performTest("SPACE"));
+    response["results"].append(performTest("MEMORY"));
+    response["results"].append(performTest("FPGA"));
+    response["timestamp"] = getCurrentTimestamp();
+    latestIbitResults = response.toStyledString();
+    return latestIbitResults;
+}
+
+std::string TestServer::handleChangeCBITTime(const Json::Value &root) {
+    cbitTime = root["new_time"].asInt();
+    Json::Value response;
+    response["status"] = "success";
+    response["new_time"] = cbitTime;
+    return response.toStyledString();
+}
+
+std::string TestServer::handleReadCBITTime() {
+    Json::Value response;
+    response["status"] = "success";
+    response["default_time"] = cbitTime;
+    return response.toStyledString();
+}
+
+std::string TestServer::createErrorResponse(const std::string &message) {
+    Json::Value response;
+    response["status"] = "error";
+    response["message"] = message;
+    return response.toStyledString();
+}
+
+std::string TestServer::createSuccessResponse(const Json::Value &data) {
+    Json::StreamWriterBuilder writer;
+    return Json::writeString(writer, data);
+}
+
+Json::Value TestServer::performTest(const std::string &testName) {
+    Json::Value result;
+    result["test"] = testName;
+    result["result"] = "success";  // Stub result
+    return result;
+}
+
 std::string getCurrentTimestamp() {
     std::time_t now = std::time(nullptr);
     char buf[sizeof "YYYY-MM-DDTHH:MM:SSZ"];
     std::strftime(buf, sizeof buf, "%FT%TZ", std::gmtime(&now));
     return buf;
 }
-
-// Class to handle the test server
-class TestServer {
-public:
-    TestServer() {
-        // Initialize default CBIT time
-        cbitTime = 10;
-    }
-
-    std::string handleCommand(const std::string &command) {
-        Json::Value root;
-        Json::CharReaderBuilder readerBuilder;
-        std::string errors;
-        std::istringstream s(command);
-        if (!Json::parseFromStream(readerBuilder, s, &root, &errors)) {
-            return createErrorResponse("Invalid JSON");
-        }
-
-        std::string cmd = root["command"].asString();
-        if (cmd == "READ_LATEST_RESULTS") {
-            return handleReadLatestResults();
-        } else if (cmd == "PERFORM_IBIT") {
-            return handlePerformIBIT();
-        } else if (cmd == "CHANGE_CBIT_TIME") {
-            return handleChangeCBITTime(root);
-        } else if (cmd == "READ_CBIT_TIME") {
-            return handleReadCBITTime();
-        } else {
-            return createErrorResponse("Unknown command");
-        }
-    }
-
-private:
-    int cbitTime;
-    std::string latestIbitResults;
-
-    std::string handleReadLatestResults() {
-        if (latestIbitResults.empty()) {
-            return createErrorResponse("No IBIT results available");
-        }
-        return latestIbitResults;
-    }
-
-    std::string handlePerformIBIT() {
-        // Perform IBIT (stub)
-        Json::Value response;
-        response["status"] = "success";
-        response["results"] = Json::arrayValue;
-        response["results"].append(performTest("I2C"));
-        response["results"].append(performTest("RTC"));
-        response["results"].append(performTest("GPIO"));
-        response["results"].append(performTest("IRQ"));
-        response["results"].append(performTest("UART"));
-        response["results"].append(performTest("SPI"));
-        response["results"].append(performTest("RGMII"));
-        response["results"].append(performTest("SPACE"));
-        response["results"].append(performTest("MEMORY"));
-        response["results"].append(performTest("FPGA"));
-        response["timestamp"] = getCurrentTimestamp();
-        latestIbitResults = response.toStyledString();
-        return latestIbitResults;
-    }
-
-    std::string handleChangeCBITTime(const Json::Value &root) {
-        cbitTime = root["new_time"].asInt();
-        Json::Value response;
-        response["status"] = "success";
-        response["new_time"] = cbitTime;
-        return response.toStyledString();
-    }
-
-    std::string handleReadCBITTime() {
-        Json::Value response;
-        response["status"] = "success";
-        response["default_time"] = cbitTime;
-        return response.toStyledString();
-    }
-
-    std::string createErrorResponse(const std::string &message) {
-        Json::Value response;
-        response["status"] = "error";
-        response["message"] = message;
-        return response.toStyledString();
-    }
-
-    std::string createSuccessResponse(const Json::Value &data) {
-        Json::StreamWriterBuilder writer;
-        return Json::writeString(writer, data);
-    }
-
-    Json::Value performTest(const std::string &testName) {
-        Json::Value result;
-        result["test"] = testName;
-        result["result"] = "success";  // Stub result
-        return result;
-    }
-};
 
 void startServer() {
     int server_fd, client_fd;
@@ -157,9 +146,4 @@ void startServer() {
         }
         close(client_fd);
     }
-}
-
-int main() {
-    startServer();
-    return 0;
 }
