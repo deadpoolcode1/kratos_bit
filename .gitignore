@@ -2,3 +2,5 @@
 *.o
 TestClient
 TestServer
+TestClient_evb
+TestServer_evb
