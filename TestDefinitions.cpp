@@ -1,13 +1,12 @@
 #include "TestDefinitions.h"
 #include "i2c.h"
+#include "config.h"  // Include the configuration header
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <iostream>
 #include <cerrno>
 #include <cstring>
-
-// Include the necessary headers for RTC
 #include <linux/rtc.h>
 
 Json::Value createTestResult(const std::string &testName, const std::string &result) {
@@ -18,24 +17,21 @@ Json::Value createTestResult(const std::string &testName, const std::string &res
 }
 
 Json::Value testI2C() {
-    const char *device = "/dev/i2c-1";
-    int address = 0x72; // The I2C address of the device
     int file;
 
-    if ((file = open(device, O_RDWR)) < 0) {
+    if ((file = open(I2C_DEVICE_PATH, O_RDWR)) < 0) {
         perror("Failed to open the i2c bus");
         return createTestResult("I2C", "failure");
     }
 
-    if (ioctl(file, I2C_SLAVE, address) < 0) {
+    if (ioctl(file, I2C_SLAVE, I2C_ADDRESS) < 0) {
         perror("Failed to acquire bus access and/or talk to slave");
         close(file);
         return createTestResult("I2C", "failure");
     }
 
-    // Reading from register 0x00
-    int reg = 0x00;
-    int res = i2c_smbus_read_byte_data(file, reg);
+    // Reading from the specified register
+    int res = i2c_smbus_read_byte_data(file, I2C_REGISTER);
 
     if (res < 0) {
         perror("Failed to read from the i2c bus");
@@ -53,8 +49,7 @@ Json::Value testI2C() {
 
 Json::Value testRTC() {
     // Open the RTC device
-    const char *rtc_device = "/dev/rtc0";
-    int file = open(rtc_device, O_RDONLY);
+    int file = open(RTC_DEVICE_PATH, O_RDONLY);
 
     if (file < 0) {
         perror("Failed to open the rtc device");
