@@ -227,7 +227,32 @@ Json::Value testRGMII() {
 }
 
 Json::Value testMEMORY() {
-    return createTestResult("MEMORY", "success");
+    std::string result = "failure";
+    std::ifstream file("/proc/meminfo");
+    std::string line;
+    int available_memory = 0;
+
+    if (file.is_open()) {
+        while (std::getline(file, line)) {
+            std::istringstream iss(line);
+            std::string key;
+            int value;
+            std::string unit;
+            if (iss >> key >> value >> unit && key == "MemAvailable:") {
+                available_memory = value / 1024; // Convert to MB
+                break;
+            }
+        }
+        file.close();
+    }
+
+    if (available_memory >= MINIMUM_AVAILABLE_MEMORY) {
+        result = "success";
+    }
+
+    Json::Value testResult = createTestResult("MEMORY", result);
+    testResult["available_memory"] = available_memory;
+    return testResult;
 }
 
 Json::Value testFPGA() {
