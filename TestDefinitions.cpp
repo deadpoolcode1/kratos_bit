@@ -196,7 +196,11 @@ Json::Value testGPIO() {
 }
 
 Json::Value testUART() {
-    return createTestResult("UART", "success");
+    if (fileExists(UART0_PATH) && fileExists(UART2_PATH)) {
+        return createTestResult("UART", "success");
+    } else {
+        return createTestResult("UART", "failure");
+    }
 }
 
 Json::Value testSPI() {
