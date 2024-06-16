@@ -19,6 +19,9 @@ const char IRQ_PATH[] = "/proc/interrupts";
 const char UART0_PATH[] = "/dev/ttymxc0";
 const char UART2_PATH[] = "/dev/ttymxc2";
 
+// SPI Path
+const char SPI_PATH[] = "/dev/spidev1.0";
+
 // Common Macros or Constants
 const int I2C_REGISTER = 0x00;
 

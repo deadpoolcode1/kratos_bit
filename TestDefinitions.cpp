@@ -204,7 +204,11 @@ Json::Value testUART() {
 }
 
 Json::Value testSPI() {
-    return createTestResult("SPI", "success");
+    if (fileExists(SPI_PATH)) {
+        return createTestResult("SPI", "success");
+    } else {
+        return createTestResult("SPI", "failure");
+    }
 }
 
 Json::Value testRGMII() {
