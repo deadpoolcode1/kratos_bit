@@ -17,6 +17,8 @@
 #include <sys/socket.h>
 #include <linux/sockios.h>
 #include <linux/ethtool.h>
+#include <cstdio>
+#include <algorithm>
 
 // Utility function to check if a file exists
 bool fileExists(const char* path) {
@@ -255,10 +257,43 @@ Json::Value testMEMORY() {
     return testResult;
 }
 
-Json::Value testFPGA() {
-    return createTestResult("FPGA", "success");
+Json::Value testSPACE() {
+    std::string result = "failure";
+    int root_used_percent = 100; // Assume failure
+
+    FILE* pipe = popen("df / | tail -1 | awk '{print $5}'", "r");
+    if (!pipe) {
+        perror("popen failed");
+        return createTestResult("SPACE", "failure");
+    }
+
+    char buffer[128];
+    std::string percentage;
+    while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+        percentage += buffer;
+    }
+
+    pclose(pipe);
+
+    // Remove the '%' character from the string
+    percentage.erase(std::remove(percentage.begin(), percentage.end(), '%'), percentage.end());
+
+    try {
+        root_used_percent = std::stoi(percentage);
+    } catch (const std::invalid_argument& e) {
+        perror("Failed to parse used percentage");
+        return createTestResult("SPACE", "failure");
+    }
+
+    if (root_used_percent <= MAX_USED_PERCENT) {
+        result = "success";
+    }
+
+    Json::Value testResult = createTestResult("SPACE", result);
+    testResult["used_percent"] = root_used_percent;
+    return testResult;
 }
 
-Json::Value testSPACE() {
-    return createTestResult("SPACE", "success");
+Json::Value testFPGA() {
+    return createTestResult("FPGA", "success");
 }

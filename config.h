@@ -4,7 +4,6 @@
 // I2C Device Path
 const char I2C_DEVICE_PATH[] = "/dev/i2c-1";
 const int I2C_ADDRESS = 0x72;
-const int I2C_REGISTER = 0x00;
 
 // RTC Device Path
 const char RTC_DEVICE_PATH[] = "/dev/rtc0";
@@ -24,10 +23,12 @@ const char SPI_PATH[] = "/dev/spidev1.0";
 const char RGMII_INTERFACE1[] = "eth0";
 const char RGMII_INTERFACE2[] = "eth1";
 
-// Minimum Available Memory in MB
-const int MINIMUM_AVAILABLE_MEMORY = 100;
-
 // IRQ Path
 const char IRQ_PATH[] = "/proc/interrupts";
+
+// Common Constants
+const int I2C_REGISTER = 0x00;
+const int MINIMUM_AVAILABLE_MEMORY = 100; // Minimum available memory in MB
+const int MAX_USED_PERCENT = 90; // Maximum allowed used percent for root filesystem
 
 #endif // CONFIG_H
