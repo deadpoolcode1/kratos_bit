@@ -1,4 +1,3 @@
-
 #ifndef CONFIG_H
 #define CONFIG_H
 
@@ -8,6 +7,10 @@ const int I2C_ADDRESS = 0x72;
 
 // RTC Device Path
 const char RTC_DEVICE_PATH[] = "/dev/rtc0";
+
+// GPIO Paths
+const char GPIO_EXPORT_PATH[] = "/sys/class/gpio/export";
+const char GPIO_PATH[] = "/sys/class/gpio/gpio0/value";
 
 // Common Macros or Constants
 const int I2C_REGISTER = 0x00;

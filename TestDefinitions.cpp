@@ -1,6 +1,6 @@
 #include "TestDefinitions.h"
 #include "i2c.h"
-#include "config.h"  // Include the configuration header
+#include "config.h"
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
@@ -8,6 +8,13 @@
 #include <cerrno>
 #include <cstring>
 #include <linux/rtc.h>
+#include <sys/stat.h>
+
+// Utility function to check if a file exists
+bool fileExists(const char* path) {
+    struct stat buffer;
+    return (stat(path, &buffer) == 0);
+}
 
 Json::Value createTestResult(const std::string &testName, const std::string &result) {
     Json::Value testResult;
@@ -85,7 +92,43 @@ Json::Value testRTC() {
 }
 
 Json::Value testGPIO() {
-    return createTestResult("GPIO", "success");
+    // Export GPIO pin
+    int exportFile = open(GPIO_EXPORT_PATH, O_WRONLY);
+    if (exportFile < 0) {
+        perror("Failed to open export for writing");
+        return createTestResult("GPIO", "failure");
+    }
+
+    if (write(exportFile, "0", 2) < 0) {
+        perror("Failed to export GPIO");
+        // Proceeding even if export fails, as it might have been exported already
+    }
+    close(exportFile);
+
+    // Check if GPIO path exists
+    if (!fileExists(GPIO_PATH)) {
+        return createTestResult("GPIO", "failure");
+    }
+
+    // Read GPIO value
+    int gpioFile = open(GPIO_PATH, O_RDONLY);
+    if (gpioFile < 0) {
+        perror("Failed to open GPIO value for reading");
+        return createTestResult("GPIO", "failure");
+    }
+
+    char value;
+    if (read(gpioFile, &value, 1) < 0) {
+        perror("Failed to read GPIO value");
+        close(gpioFile);
+        return createTestResult("GPIO", "failure");
+    }
+    close(gpioFile);
+
+    Json::Value result = createTestResult("GPIO", "success");
+    result["value"] = value == '0' ? 0 : 1;
+
+    return result;
 }
 
 Json::Value testIRQ() {
