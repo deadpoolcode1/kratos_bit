@@ -1,4 +1,5 @@
 #include "TestServer.h"
+#include "TestDefinitions.h"
 #include <iostream>
 #include <sstream>
 #include <ctime>
@@ -48,16 +49,16 @@ std::string TestServer::handlePerformIBIT() {
     Json::Value response;
     response["status"] = "success";
     response["results"] = Json::arrayValue;
-    response["results"].append(performTest("I2C"));
-    response["results"].append(performTest("RTC"));
-    response["results"].append(performTest("GPIO"));
-    response["results"].append(performTest("IRQ"));
-    response["results"].append(performTest("UART"));
-    response["results"].append(performTest("SPI"));
-    response["results"].append(performTest("RGMII"));
-    response["results"].append(performTest("SPACE"));
-    response["results"].append(performTest("MEMORY"));
-    response["results"].append(performTest("FPGA"));
+    response["results"].append(testI2C());
+    response["results"].append(testRTC());
+    response["results"].append(testGPIO());
+    response["results"].append(testIRQ());
+    response["results"].append(testUART());
+    response["results"].append(testSPI());
+    response["results"].append(testRGMII());
+    response["results"].append(testSPACE());
+    response["results"].append(testMEMORY());
+    response["results"].append(testFPGA());
     response["timestamp"] = getCurrentTimestamp();
     latestIbitResults = response.toStyledString();
     return latestIbitResults;
@@ -91,10 +92,29 @@ std::string TestServer::createSuccessResponse(const Json::Value &data) {
 }
 
 Json::Value TestServer::performTest(const std::string &testName) {
-    Json::Value result;
-    result["test"] = testName;
-    result["result"] = "success";  // Stub result
-    return result;
+    if (testName == "I2C") {
+        return testI2C();
+    } else if (testName == "RTC") {
+        return testRTC();
+    } else if (testName == "GPIO") {
+        return testGPIO();
+    } else if (testName == "IRQ") {
+        return testIRQ();
+    } else if (testName == "UART") {
+        return testUART();
+    } else if (testName == "SPI") {
+        return testSPI();
+    } else if (testName == "RGMII") {
+        return testRGMII();
+    } else if (testName == "SPACE") {
+        return testSPACE();
+    } else if (testName == "MEMORY") {
+        return testMEMORY();
+    } else if (testName == "FPGA") {
+        return testFPGA();
+    } else {
+        return createTestResult(testName, "unknown test");
+    }
 }
 
 std::string getCurrentTimestamp() {

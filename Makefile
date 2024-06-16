@@ -9,7 +9,7 @@ OUTPUT_CLIENT ?= TestClient_host
 JSONCPP_SRCS = $(wildcard libs/jsoncpp/src/lib_json/*.cpp)
 
 # Object files
-OBJ_SERVER = main.o TestServer.o $(JSONCPP_SRCS:.cpp=.o)
+OBJ_SERVER = main.o TestServer.o TestDefinitions.o $(JSONCPP_SRCS:.cpp=.o)
 OBJ_CLIENT = TestClient.o $(JSONCPP_SRCS:.cpp=.o)
 
 all: $(OUTPUT_SERVER) $(OUTPUT_CLIENT)
@@ -25,6 +25,9 @@ main.o: main.cpp
 
 TestServer.o: TestServer.cpp TestServer.h
 	$(CXX) $(CXXFLAGS) -c TestServer.cpp
+
+TestDefinitions.o: TestDefinitions.cpp TestDefinitions.h
+	$(CXX) $(CXXFLAGS) -c TestDefinitions.cpp
 
 TestClient.o: TestClient.cpp
 	$(CXX) $(CXXFLAGS) -c TestClient.cpp
