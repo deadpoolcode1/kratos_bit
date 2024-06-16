@@ -9,6 +9,9 @@
 #include <cstring>
 #include <linux/rtc.h>
 #include <sys/stat.h>
+#include <fstream>
+#include <sstream>
+#include <map>
 
 // Utility function to check if a file exists
 bool fileExists(const char* path) {
@@ -21,6 +24,67 @@ Json::Value createTestResult(const std::string &testName, const std::string &res
     testResult["test"] = testName;
     testResult["result"] = result;
     return testResult;
+}
+
+std::map<int, int> readIRQCounts() {
+    std::map<int, int> irqCounts;
+    std::ifstream file(IRQ_PATH);
+    if (!file.is_open()) {
+        perror("Failed to open IRQ file");
+        return irqCounts;
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+        std::istringstream iss(line);
+        int irqNumber;
+        std::string temp;
+        if (iss >> irqNumber >> temp) {
+            int count;
+            iss >> count;
+            irqCounts[irqNumber] = count;
+        }
+    }
+
+    file.close();
+    return irqCounts;
+}
+
+Json::Value testIRQ() {
+    auto initialCounts = readIRQCounts();
+    if (initialCounts.empty()) {
+        return createTestResult("IRQ", "failure");
+    }
+
+    // Perform an operation that should trigger an IRQ here
+    // For example, if you have a specific device or hardware event
+    // trigger it here. This is a placeholder for the actual operation.
+    // performOperationThatTriggersIRQ();
+
+    sleep(2); // Wait to ensure IRQs are processed
+
+    auto finalCounts = readIRQCounts();
+    if (finalCounts.empty()) {
+        return createTestResult("IRQ", "failure");
+    }
+
+    // Compare initial and final counts to detect any changes
+    bool irqTriggered = false;
+    for (const auto& entry : finalCounts) {
+        int irqNumber = entry.first;
+        int initialCount = initialCounts[irqNumber];
+        int finalCount = entry.second;
+        if (finalCount > initialCount) {
+            irqTriggered = true;
+            break;
+        }
+    }
+
+    if (irqTriggered) {
+        return createTestResult("IRQ", "success");
+    } else {
+        return createTestResult("IRQ", "failure");
+    }
 }
 
 Json::Value testI2C() {
@@ -129,10 +193,6 @@ Json::Value testGPIO() {
     result["value"] = value == '0' ? 0 : 1;
 
     return result;
-}
-
-Json::Value testIRQ() {
-    return createTestResult("IRQ", "success");
 }
 
 Json::Value testUART() {
