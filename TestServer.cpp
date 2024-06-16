@@ -6,12 +6,22 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include <json/json.h>
+#include <thread>
+#include <chrono>
 
 #define SOCKET_PATH "/tmp/test_socket"
 
-TestServer::TestServer() {
-    // Initialize default CBIT time
-    cbitTime = 10;
+TestServer::TestServer() : cbitTime(10), cbitRunning(true), cbitThread(&TestServer::runCBIT, this) {
+    // Perform PBIT on startup and store the results
+    latestIbitResults = performPBIT();
+}
+
+TestServer::~TestServer() {
+    cbitRunning = false;
+    if (cbitThread.joinable()) {
+        cbitThread.join();
+    }
 }
 
 std::string TestServer::handleCommand(const std::string &command) {
@@ -45,22 +55,8 @@ std::string TestServer::handleReadLatestResults() {
 }
 
 std::string TestServer::handlePerformIBIT() {
-    // Perform IBIT (stub)
-    Json::Value response;
-    response["status"] = "success";
-    response["results"] = Json::arrayValue;
-    response["results"].append(testI2C());
-    response["results"].append(testRTC());
-    response["results"].append(testGPIO());
-    response["results"].append(testIRQ());
-    response["results"].append(testUART());
-    response["results"].append(testSPI());
-    response["results"].append(testRGMII());
-    response["results"].append(testSPACE());
-    response["results"].append(testMEMORY());
-    response["results"].append(testFPGA());
-    response["timestamp"] = getCurrentTimestamp();
-    latestIbitResults = response.toStyledString();
+    // Perform IBIT and store the results
+    latestIbitResults = performPBIT(); // Use the same function for IBIT and PBIT
     return latestIbitResults;
 }
 
@@ -115,6 +111,75 @@ Json::Value TestServer::performTest(const std::string &testName) {
     } else {
         return createTestResult(testName, "unknown test");
     }
+}
+
+std::string TestServer::performPBIT() {
+    // Perform PBIT (stub)
+    Json::Value response;
+    response["status"] = "success";
+    response["results"] = Json::arrayValue;
+    response["results"].append(testI2C());
+    response["results"].append(testRTC());
+    response["results"].append(testGPIO());
+    response["results"].append(testIRQ());
+    response["results"].append(testUART());
+    response["results"].append(testSPI());
+    response["results"].append(testRGMII());
+    response["results"].append(testSPACE());
+    response["results"].append(testMEMORY());
+    response["results"].append(testFPGA());
+    response["timestamp"] = getCurrentTimestamp();
+    return response.toStyledString();
+}
+
+void TestServer::runCBIT() {
+    while (cbitRunning) {
+        // Perform CBIT tests (testSPACE and testMEMORY)
+        Json::Value cbitResults;
+        cbitResults["status"] = "success";
+        cbitResults["results"] = Json::arrayValue;
+        cbitResults["results"].append(testSPACE());
+        cbitResults["results"].append(testMEMORY());
+        cbitResults["timestamp"] = getCurrentTimestamp();
+
+        // Merge the latest CBIT results with the IBIT results
+        mergeCbitResults(cbitResults);
+
+        // Simulate periodic CBIT execution
+        std::this_thread::sleep_for(std::chrono::seconds(cbitTime));
+    }
+}
+
+void TestServer::mergeCbitResults(const Json::Value &cbitResults) {
+    Json::CharReaderBuilder readerBuilder;
+    Json::Value ibitResults;
+    std::string errors;
+
+    std::istringstream s(latestIbitResults);
+    if (!Json::parseFromStream(readerBuilder, s, &ibitResults, &errors)) {
+        std::cerr << "Failed to parse IBIT results: " << errors << std::endl;
+        return;
+    }
+
+    for (const auto &cbitResult : cbitResults["results"]) {
+        std::string testName = cbitResult["test"].asString();
+        bool found = false;
+
+        for (auto &ibitResult : ibitResults["results"]) {
+            if (ibitResult["test"].asString() == testName) {
+                ibitResult = cbitResult;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            ibitResults["results"].append(cbitResult);
+        }
+    }
+
+    ibitResults["timestamp"] = cbitResults["timestamp"];
+    latestIbitResults = ibitResults.toStyledString();
 }
 
 std::string getCurrentTimestamp() {
