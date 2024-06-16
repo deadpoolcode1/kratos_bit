@@ -12,6 +12,11 @@
 #include <fstream>
 #include <sstream>
 #include <map>
+#include <net/if.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <linux/sockios.h>
+#include <linux/ethtool.h>
 
 // Utility function to check if a file exists
 bool fileExists(const char* path) {
@@ -212,11 +217,13 @@ Json::Value testSPI() {
 }
 
 Json::Value testRGMII() {
-    return createTestResult("RGMII", "success");
-}
-
-Json::Value testSPACE() {
-    return createTestResult("SPACE", "success");
+    std::string eth0_path = std::string("/sys/class/net/") + RGMII_INTERFACE1;
+    std::string eth1_path = std::string("/sys/class/net/") + RGMII_INTERFACE2;
+    if (fileExists(eth0_path.c_str()) && fileExists(eth1_path.c_str())) {
+        return createTestResult("RGMII", "success");
+    } else {
+        return createTestResult("RGMII", "failure");
+    }
 }
 
 Json::Value testMEMORY() {
@@ -225,4 +232,8 @@ Json::Value testMEMORY() {
 
 Json::Value testFPGA() {
     return createTestResult("FPGA", "success");
+}
+
+Json::Value testSPACE() {
+    return createTestResult("SPACE", "success");
 }

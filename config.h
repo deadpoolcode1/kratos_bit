@@ -22,6 +22,10 @@ const char UART2_PATH[] = "/dev/ttymxc2";
 // SPI Path
 const char SPI_PATH[] = "/dev/spidev1.0";
 
+// RGMII Interfaces
+const char RGMII_INTERFACE1[] = "eth0";
+const char RGMII_INTERFACE2[] = "eth1";
+
 // Common Macros or Constants
 const int I2C_REGISTER = 0x00;
 
