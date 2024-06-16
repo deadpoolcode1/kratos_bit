@@ -7,6 +7,9 @@
 #include <cerrno>
 #include <cstring>
 
+// Include the necessary headers for RTC
+#include <linux/rtc.h>
+
 Json::Value createTestResult(const std::string &testName, const std::string &result) {
     Json::Value testResult;
     testResult["test"] = testName;
@@ -49,7 +52,41 @@ Json::Value testI2C() {
 }
 
 Json::Value testRTC() {
-    return createTestResult("RTC", "success");
+    // Open the RTC device
+    const char *rtc_device = "/dev/rtc0";
+    int file = open(rtc_device, O_RDONLY);
+
+    if (file < 0) {
+        perror("Failed to open the rtc device");
+        return createTestResult("RTC", "failure");
+    }
+
+    // Get the current time
+    struct rtc_time rtc_time1, rtc_time2;
+    if (ioctl(file, RTC_RD_TIME, &rtc_time1) < 0) {
+        perror("Failed to read the rtc time");
+        close(file);
+        return createTestResult("RTC", "failure");
+    }
+
+    // Wait for 2 seconds
+    sleep(2);
+
+    // Get the current time again
+    if (ioctl(file, RTC_RD_TIME, &rtc_time2) < 0) {
+        perror("Failed to read the rtc time");
+        close(file);
+        return createTestResult("RTC", "failure");
+    }
+
+    close(file);
+
+    // Check if the RTC time has progressed
+    if ((rtc_time2.tm_sec != rtc_time1.tm_sec) || (rtc_time2.tm_min != rtc_time1.tm_min) || (rtc_time2.tm_hour != rtc_time1.tm_hour)) {
+        return createTestResult("RTC", "success");
+    } else {
+        return createTestResult("RTC", "failure");
+    }
 }
 
 Json::Value testGPIO() {
