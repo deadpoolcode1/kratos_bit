@@ -1,4 +1,16 @@
 #include "TestDefinitions.h"
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include <linux/i2c-dev.h>
+#include <iostream>
+#include <cerrno>
+#include <cstring>
+
+// Ensure the correct function prototype is available
+extern "C" {
+    __s32 i2c_smbus_read_byte_data(int file, __u8 command);
+}
 
 Json::Value createTestResult(const std::string &testName, const std::string &result) {
     Json::Value testResult;
@@ -8,7 +20,7 @@ Json::Value createTestResult(const std::string &testName, const std::string &res
 }
 
 Json::Value testI2C() {
-    return createTestResult("I2C", "success");
+    return createTestResult("RTC", "success");
 }
 
 Json::Value testRTC() {
@@ -46,4 +58,3 @@ Json::Value testMEMORY() {
 Json::Value testFPGA() {
     return createTestResult("FPGA", "success");
 }
-
