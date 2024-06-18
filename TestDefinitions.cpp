@@ -20,6 +20,13 @@
 #include <cstdio>
 #include <algorithm>
 
+bool initializeConfig() {
+    if (!LoadConfig("config.json", MINIMUM_AVAILABLE_MEMORY, MAX_USED_PERCENT)) {
+        return false;
+    }
+    return true;
+}
+
 // Utility function to check if a file exists
 bool fileExists(const char* path) {
     struct stat buffer;
@@ -229,6 +236,10 @@ Json::Value testRGMII() {
 }
 
 Json::Value testMEMORY() {
+    if (!initializeConfig()) {
+        return createTestResult("MEMORY", "failure");
+    }
+
     std::string result = "failure";
     std::ifstream file("/proc/meminfo");
     std::string line;
@@ -258,6 +269,10 @@ Json::Value testMEMORY() {
 }
 
 Json::Value testSPACE() {
+    if (!initializeConfig()) {
+        return createTestResult("SPACE", "failure");
+    }
+
     std::string result = "failure";
     int root_used_percent = 100; // Assume failure
 

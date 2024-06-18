@@ -1,6 +1,11 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <string>
+#include <fstream>
+#include <iostream>
+#include <json/json.h>
+
 // I2C Device Path
 const char I2C_DEVICE_PATH[] = "/dev/i2c-1";
 const int I2C_ADDRESS = 0x72;
@@ -28,7 +33,11 @@ const char IRQ_PATH[] = "/proc/interrupts";
 
 // Common Constants
 const int I2C_REGISTER = 0x00;
-const int MINIMUM_AVAILABLE_MEMORY = 100; // Minimum available memory in MB
-const int MAX_USED_PERCENT = 90; // Maximum allowed used percent for root filesystem
+
+extern int MINIMUM_AVAILABLE_MEMORY;
+extern int MAX_USED_PERCENT;
+
+// Function to load configuration
+bool LoadConfig(const std::string& filename, int& min_memory, int& max_used_percent);
 
 #endif // CONFIG_H

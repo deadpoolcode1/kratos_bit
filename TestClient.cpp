@@ -3,8 +3,10 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include <json/json.h>
+#include "config.h"
 
 #define SOCKET_PATH "/tmp/test_socket"
+#define CONFIG_FILE "config.json"
 
 std::string sendCommand(const std::string &command) {
     int client_fd;
@@ -63,6 +65,16 @@ void testCommands() {
 }
 
 int main() {
+    int min_memory = 0;
+    int max_used_percent = 0;
+
+    if (!LoadConfig(CONFIG_FILE, min_memory, max_used_percent)) {
+        return 1;
+    }
+
+    std::cout << "MINIMUM_AVAILABLE_MEMORY: " << min_memory << std::endl;
+    std::cout << "MAX_USED_PERCENT: " << max_used_percent << std::endl;
+
     testCommands();
     return 0;
 }
