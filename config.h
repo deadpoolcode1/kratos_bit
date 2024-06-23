@@ -36,8 +36,10 @@ const int I2C_REGISTER = 0x00;
 
 extern int MINIMUM_AVAILABLE_MEMORY;
 extern int MAX_USED_PERCENT;
+extern int MAX_TEMP;
+extern int MIN_TEMP;
 
 // Function to load configuration
-bool LoadConfig(const std::string& filename, int& min_memory, int& max_used_percent);
+bool LoadConfig(const std::string& filename, int& min_memory, int& max_used_percent, int& max_temp, int& min_temp);
 
 #endif // CONFIG_H

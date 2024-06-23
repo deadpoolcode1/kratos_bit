@@ -1,4 +1,3 @@
-CXX = /usr/bin/g++
 CXXFLAGS = -std=c++11 -Wall -Ilibs/jsoncpp/include
 LDFLAGS = -lpthread -ljsoncpp
 

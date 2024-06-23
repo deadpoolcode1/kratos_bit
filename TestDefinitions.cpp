@@ -21,7 +21,7 @@
 #include <algorithm>
 
 bool initializeConfig() {
-    if (!LoadConfig("config.json", MINIMUM_AVAILABLE_MEMORY, MAX_USED_PERCENT)) {
+    if (!LoadConfig("/etc/config.json", MINIMUM_AVAILABLE_MEMORY, MAX_USED_PERCENT,MAX_TEMP ,MIN_TEMP)) {
         return false;
     }
     return true;
@@ -276,27 +276,42 @@ Json::Value testSPACE() {
     std::string result = "failure";
     int root_used_percent = 100; // Assume failure
 
-    FILE* pipe = popen("df / | tail -1 | awk '{print $5}'", "r");
+    FILE* pipe = popen("df -h / | tail -1", "r");
     if (!pipe) {
         perror("popen failed");
         return createTestResult("SPACE", "failure");
     }
 
     char buffer[128];
-    std::string percentage;
+    std::string df_output;
     while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
-        percentage += buffer;
+        df_output += buffer;
     }
 
     pclose(pipe);
 
-    // Remove the '%' character from the string
-    percentage.erase(std::remove(percentage.begin(), percentage.end(), '%'), percentage.end());
+    // Example df_output: "/dev/root 580.2M 361.4M 175.7M 67% /"
+    std::istringstream iss(df_output);
+    std::string filesystem, size, used, available, use_percentage, mount_point;
+    iss >> filesystem >> size >> used >> available >> use_percentage >> mount_point;
+
+    // Remove the '%' character from the use_percentage string
+    use_percentage.erase(std::remove(use_percentage.begin(), use_percentage.end(), '%'), use_percentage.end());
 
     try {
-        root_used_percent = std::stoi(percentage);
+        root_used_percent = std::stoi(use_percentage);
     } catch (const std::invalid_argument& e) {
         perror("Failed to parse used percentage");
+        return createTestResult("SPACE", "failure");
+    }
+
+    // Remove 'M' from the available space and convert to uint16_t
+    available.erase(std::remove(available.begin(), available.end(), 'M'), available.end());
+    uint16_t available_mb;
+    try {
+        available_mb = static_cast<uint16_t>(std::stof(available));
+    } catch (const std::invalid_argument& e) {
+        perror("Failed to parse available space in MB");
         return createTestResult("SPACE", "failure");
     }
 
@@ -306,9 +321,47 @@ Json::Value testSPACE() {
 
     Json::Value testResult = createTestResult("SPACE", result);
     testResult["used_percent"] = root_used_percent;
+    testResult["value"] = available_mb;
     return testResult;
 }
 
 Json::Value testFPGA() {
     return createTestResult("FPGA", "success");
+}
+Json::Value testTemperature() {
+    // Open the temperature file
+    int tempFile = open(TEMP_PATH, O_RDONLY);
+    if (tempFile < 0) {
+        perror("Failed to open temperature file for reading");
+        return createTestResult("Temperature", "failure");
+    }
+
+    // Read the temperature value
+    char buffer[16];
+    if (read(tempFile, buffer, sizeof(buffer) - 1) < 0) {
+        perror("Failed to read temperature value");
+        close(tempFile);
+        return createTestResult("Temperature", "failure");
+    }
+    close(tempFile);
+
+    // Null-terminate the string read
+    buffer[15] = '\0';
+
+    // Convert the temperature to an integer
+    int temp = atoi(buffer);
+
+    // Convert to degrees Celsius with 0.1 resolution
+    float tempCelsius = temp / 1000.0;
+
+    Json::Value result = createTestResult("Temperature", "failure");
+    
+
+    if (tempCelsius > MIN_TEMP && tempCelsius < MAX_TEMP)
+    {
+    result = createTestResult("Temperature", "success");
+    }
+    result["value"] = tempCelsius;
+
+    return result;
 }

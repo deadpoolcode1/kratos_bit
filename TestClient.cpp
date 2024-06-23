@@ -1,3 +1,4 @@
+// TestClient.cpp
 #include <iostream>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -67,13 +68,17 @@ void testCommands() {
 int main() {
     int min_memory = 0;
     int max_used_percent = 0;
+    int max_temp = 0;
+    int min_temp = 0;
 
-    if (!LoadConfig(CONFIG_FILE, min_memory, max_used_percent)) {
+    if (!LoadConfig(CONFIG_FILE, min_memory, max_used_percent, max_temp, min_temp)) {
         return 1;
     }
 
     std::cout << "MINIMUM_AVAILABLE_MEMORY: " << min_memory << std::endl;
     std::cout << "MAX_USED_PERCENT: " << max_used_percent << std::endl;
+    std::cout << "MAX_TEMP: " << max_temp << std::endl;
+    std::cout << "MIN_TEMP: " << min_temp << std::endl;
 
     testCommands();
     return 0;

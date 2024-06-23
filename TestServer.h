@@ -19,7 +19,7 @@ private:
     std::string handleReadCBITTime();
     std::string createErrorResponse(const std::string &message);
     std::string createSuccessResponse(const Json::Value &data);
-    Json::Value performTest(const std::string &testName);
+    std::string performTest(const std::string &testName);
     std::string performPBIT();
     void runCBIT();
     void mergeCbitResults(const Json::Value &cbitResults);

@@ -42,7 +42,11 @@ std::string TestServer::handleCommand(const std::string &command) {
         return handleChangeCBITTime(root);
     } else if (cmd == "READ_CBIT_TIME") {
         return handleReadCBITTime();
-    } else {
+    } else if (cmd == "PERFORM_TEST_TEMP") {
+        return performTest("TEMP");
+    } else if (cmd == "PERFORM_TEST_FREESPACE") {
+        return performTest("FREESPACE");
+    }else {
         return createErrorResponse("Unknown command");
     }
 }
@@ -87,29 +91,19 @@ std::string TestServer::createSuccessResponse(const Json::Value &data) {
     return Json::writeString(writer, data);
 }
 
-Json::Value TestServer::performTest(const std::string &testName) {
-    if (testName == "I2C") {
-        return testI2C();
-    } else if (testName == "RTC") {
-        return testRTC();
-    } else if (testName == "GPIO") {
-        return testGPIO();
-    } else if (testName == "IRQ") {
-        return testIRQ();
-    } else if (testName == "UART") {
-        return testUART();
-    } else if (testName == "SPI") {
-        return testSPI();
-    } else if (testName == "RGMII") {
-        return testRGMII();
-    } else if (testName == "SPACE") {
-        return testSPACE();
-    } else if (testName == "MEMORY") {
-        return testMEMORY();
-    } else if (testName == "FPGA") {
-        return testFPGA();
+std::string TestServer::performTest(const std::string &testName) {
+    Json::Value response;
+    response["status"] = "success";
+    response["results"] = Json::arrayValue;
+   
+    if (testName == "FREESPACE") {
+        response["results"].append(testSPACE());
+        return response.toStyledString();
+    }else if (testName == "TEMP") {
+        response["results"].append(testTemperature());
+        return response.toStyledString();   
     } else {
-        return createTestResult(testName, "unknown test");
+        return "";
     }
 }
 
@@ -118,16 +112,17 @@ std::string TestServer::performPBIT() {
     Json::Value response;
     response["status"] = "success";
     response["results"] = Json::arrayValue;
-    response["results"].append(testI2C());
+    /*response["results"].append(testI2C());
     response["results"].append(testRTC());
     response["results"].append(testGPIO());
     response["results"].append(testIRQ());
     response["results"].append(testUART());
     response["results"].append(testSPI());
     response["results"].append(testRGMII());
-    response["results"].append(testSPACE());
     response["results"].append(testMEMORY());
-    response["results"].append(testFPGA());
+    response["results"].append(testFPGA());*/
+    response["results"].append(testSPACE());
+    response["results"].append(testTemperature());
     response["timestamp"] = getCurrentTimestamp();
     return response.toStyledString();
 }
@@ -139,7 +134,8 @@ void TestServer::runCBIT() {
         cbitResults["status"] = "success";
         cbitResults["results"] = Json::arrayValue;
         cbitResults["results"].append(testSPACE());
-        cbitResults["results"].append(testMEMORY());
+        //cbitResults["results"].append(testMEMORY());
+        cbitResults["results"].append(testTemperature());
         cbitResults["timestamp"] = getCurrentTimestamp();
 
         // Merge the latest CBIT results with the IBIT results

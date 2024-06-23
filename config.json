@@ -1,4 +1,6 @@
 {
     "MINIMUM_AVAILABLE_MEMORY": 100,
-    "MAX_USED_PERCENT": 90
+    "MAX_USED_PERCENT": 90,
+    "MAX_TEMP": 75,
+    "MIN_TEMP": -20
 }
