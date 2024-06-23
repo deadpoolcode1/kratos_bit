@@ -6,7 +6,7 @@
 #include <json/json.h>
 #include "config.h"
 
-#define SOCKET_PATH "/tmp/test_socket"
+#define SOCKET_PATH "/tmp/uds_socket"
 #define CONFIG_FILE "config.json"
 
 std::string sendCommand(const std::string &command) {

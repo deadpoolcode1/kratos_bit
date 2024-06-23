@@ -10,7 +10,7 @@
 #include <thread>
 #include <chrono>
 
-#define SOCKET_PATH "/tmp/test_socket"
+#define SOCKET_PATH "/tmp/uds_socket"
 
 TestServer::TestServer() : cbitTime(10), cbitRunning(true), cbitThread(&TestServer::runCBIT, this) {
     // Perform PBIT on startup and store the results
