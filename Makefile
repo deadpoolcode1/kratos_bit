@@ -1,4 +1,4 @@
-CXXFLAGS = -std=c++11 -Wall -Ilibs/jsoncpp/include
+CXXFLAGS = -std=c++17 -Wall -Ilibs/jsoncpp/include
 LDFLAGS = -lpthread -ljsoncpp
 
 # Default output file names (can be overridden by environment variables)

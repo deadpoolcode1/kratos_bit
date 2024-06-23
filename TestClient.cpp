@@ -1,9 +1,11 @@
-// TestClient.cpp
 #include <iostream>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
 #include <json/json.h>
+#include <string>
+#include <optional>
+#include <map>
 #include "config.h"
 
 #define SOCKET_PATH "/tmp/uds_socket"
@@ -41,31 +43,73 @@ std::string sendCommand(const std::string &command) {
     return "";
 }
 
-void testCommands() {
+void performTest(const std::string& test) {
     Json::Value root;
-    root["command"] = "READ_LATEST_RESULTS";
-    std::string command = Json::writeString(Json::StreamWriterBuilder(), root);
-    std::cout << "Sending: " << command << std::endl;
-    std::cout << "Response: " << sendCommand(command) << std::endl;
+    std::string command;
 
-    root["command"] = "PERFORM_IBIT";
-    command = Json::writeString(Json::StreamWriterBuilder(), root);
-    std::cout << "Sending: " << command << std::endl;
-    std::cout << "Response: " << sendCommand(command) << std::endl;
+    if (test == "READ_LATEST_RESULTS") {
+        root["command"] = "READ_LATEST_RESULTS";
+    } else if (test == "PERFORM_IBIT") {
+        root["command"] = "PERFORM_IBIT";
+    } else if (test == "CHANGE_CBIT_TIME") {
+        root["command"] = "CHANGE_CBIT_TIME";
+        root["new_time"] = 20; // Example new time value
+    } else if (test == "READ_CBIT_TIME") {
+        root["command"] = "READ_CBIT_TIME";
+    } else {
+        std::cerr << "Unknown test: " << test << std::endl;
+        return;
+    }
 
-    root["command"] = "CHANGE_CBIT_TIME";
-    root["new_time"] = 20;
-    command = Json::writeString(Json::StreamWriterBuilder(), root);
-    std::cout << "Sending: " << command << std::endl;
-    std::cout << "Response: " << sendCommand(command) << std::endl;
-
-    root["command"] = "READ_CBIT_TIME";
     command = Json::writeString(Json::StreamWriterBuilder(), root);
     std::cout << "Sending: " << command << std::endl;
     std::cout << "Response: " << sendCommand(command) << std::endl;
 }
 
-int main() {
+void performAllTests() {
+    performTest("READ_LATEST_RESULTS");
+    performTest("PERFORM_IBIT");
+    performTest("CHANGE_CBIT_TIME");
+    performTest("READ_CBIT_TIME");
+}
+
+void showHelp() {
+    std::cout << "Usage: TestClient_evb [option]\n"
+              << "Options:\n"
+              << "  READ_LATEST_RESULTS  Reads the latest results\n"
+              << "  PERFORM_IBIT         Performs IBIT\n"
+              << "  CHANGE_CBIT_TIME     Changes CBIT time\n"
+              << "  READ_CBIT_TIME       Reads CBIT time\n"
+              << "  -h, --help           Show this help message\n";
+}
+
+std::optional<std::string> parseCommandLineArguments(int argc, char* argv[]) {
+    if (argc < 2) {
+        return std::nullopt;
+    }
+
+    std::map<std::string, std::string> validCommands = {
+        {"READ_LATEST_RESULTS", "Reads the latest results"},
+        {"PERFORM_IBIT", "Performs IBIT"},
+        {"CHANGE_CBIT_TIME", "Changes CBIT time"},
+        {"READ_CBIT_TIME", "Reads CBIT time"},
+        {"-h", "Show help"},
+        {"--help", "Show help"}
+    };
+
+    std::string test = argv[1];
+    if (validCommands.find(test) == validCommands.end()) {
+        std::cerr << "Invalid test name provided. Valid tests are:" << std::endl;
+        for (const auto& cmd : validCommands) {
+            std::cerr << "  - " << cmd.first << ": " << cmd.second << std::endl;
+        }
+        return std::nullopt;
+    }
+
+    return test;
+}
+
+int main(int argc, char* argv[]) {
     int min_memory = 0;
     int max_used_percent = 0;
     int max_temp = 0;
@@ -80,6 +124,15 @@ int main() {
     std::cout << "MAX_TEMP: " << max_temp << std::endl;
     std::cout << "MIN_TEMP: " << min_temp << std::endl;
 
-    testCommands();
+    auto test = parseCommandLineArguments(argc, argv);
+    if (!test) {
+        std::cout << "No valid test specified, performing all tests..." << std::endl;
+        performAllTests();
+    } else if (*test == "-h" || *test == "--help") {
+        showHelp();
+    } else {
+        performTest(*test);
+    }
+
     return 0;
 }
