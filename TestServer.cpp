@@ -168,7 +168,17 @@ std::string TestServer::performPBIT() {
 }
 
 void TestServer::runCBIT() {
+    bool ibitDone = false;
+
     while (cbitRunning) {
+        // Perform IBIT once if it hasn't been done
+        if (!ibitDone) {
+            std::cout << "No IBIT results available. Performing initial IBIT..." << std::endl;
+            latestIbitResults = performPBIT();
+            std::cout << "Initial IBIT completed." << std::endl;
+            ibitDone = true;
+        }
+
         // Perform CBIT tests (testSPACE and testMEMORY)
         Json::Value cbitResults;
         cbitResults["status"] = "success";
@@ -177,6 +187,9 @@ void TestServer::runCBIT() {
         cbitResults["results"].append(testTemperature());
         cbitResults["timestamp"] = getCurrentTimestamp();
 
+        // Log each CBIT run
+        std::cout << "CBIT run at: " << cbitResults["timestamp"].asString() << std::endl;
+
         // Merge the latest CBIT results with the IBIT results
         mergeCbitResults(cbitResults);
 
@@ -184,6 +197,7 @@ void TestServer::runCBIT() {
         std::this_thread::sleep_for(std::chrono::seconds(cbitTime));
     }
 }
+
 
 void TestServer::mergeCbitResults(const Json::Value &cbitResults) {
     Json::CharReaderBuilder readerBuilder;
