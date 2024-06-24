@@ -58,6 +58,28 @@ void performTest(const std::string& test) {
         root["command"] = "READ_CBIT_TIME";
     } else if (test == "READ_PBIT") {
         root["command"] = "READ_PBIT";
+    } else if (test == "PERFORM_TEST_TEMP") {
+        root["command"] = "PERFORM_TEST_TEMP";
+    } else if (test == "PERFORM_TEST_FREESPACE") {
+        root["command"] = "PERFORM_TEST_FREESPACE";
+    } else if (test == "PERFORM_TEST_I2C") {
+        root["command"] = "PERFORM_TEST_I2C";
+    } else if (test == "PERFORM_TEST_RTC") {
+        root["command"] = "PERFORM_TEST_RTC";
+    } else if (test == "PERFORM_TEST_GPIO") {
+        root["command"] = "PERFORM_TEST_GPIO";
+    } else if (test == "PERFORM_TEST_IRQ") {
+        root["command"] = "PERFORM_TEST_IRQ";
+    } else if (test == "PERFORM_TEST_UART") {
+        root["command"] = "PERFORM_TEST_UART";
+    } else if (test == "PERFORM_TEST_SPI") {
+        root["command"] = "PERFORM_TEST_SPI";
+    } else if (test == "PERFORM_TEST_RGMII") {
+        root["command"] = "PERFORM_TEST_RGMII";
+    } else if (test == "PERFORM_TEST_MEMORY") {
+        root["command"] = "PERFORM_TEST_MEMORY";
+    } else if (test == "PERFORM_TEST_FPGA") {
+        root["command"] = "PERFORM_TEST_FPGA";
     } else {
         std::cerr << "Unknown test: " << test << std::endl;
         return;
@@ -74,17 +96,39 @@ void performAllTests() {
     performTest("CHANGE_CBIT_TIME");
     performTest("READ_CBIT_TIME");
     performTest("READ_PBIT");
+    performTest("PERFORM_TEST_TEMP");
+    performTest("PERFORM_TEST_FREESPACE");
+    performTest("PERFORM_TEST_I2C");
+    performTest("PERFORM_TEST_RTC");
+    performTest("PERFORM_TEST_GPIO");
+    performTest("PERFORM_TEST_IRQ");
+    performTest("PERFORM_TEST_UART");
+    performTest("PERFORM_TEST_SPI");
+    performTest("PERFORM_TEST_RGMII");
+    performTest("PERFORM_TEST_MEMORY");
+    performTest("PERFORM_TEST_FPGA");
 }
 
 void showHelp() {
     std::cout << "Usage: TestClient_evb [option]\n"
               << "Options:\n"
-              << "  READ_LATEST_RESULTS  Reads the latest results\n"
-              << "  PERFORM_IBIT         Performs IBIT\n"
-              << "  CHANGE_CBIT_TIME     Changes CBIT time\n"
-              << "  READ_CBIT_TIME       Reads CBIT time\n"
-              << "  READ_PBIT            Reads PBIT results\n"
-              << "  -h, --help           Show this help message\n";
+              << "  READ_LATEST_RESULTS    Reads the latest results\n"
+              << "  PERFORM_IBIT           Performs IBIT\n"
+              << "  CHANGE_CBIT_TIME       Changes CBIT time\n"
+              << "  READ_CBIT_TIME         Reads CBIT time\n"
+              << "  READ_PBIT              Reads PBIT results\n"
+              << "  PERFORM_TEST_TEMP      Performs Temperature test\n"
+              << "  PERFORM_TEST_FREESPACE Performs Free Space test\n"
+              << "  PERFORM_TEST_I2C       Performs I2C test\n"
+              << "  PERFORM_TEST_RTC       Performs RTC test\n"
+              << "  PERFORM_TEST_GPIO      Performs GPIO test\n"
+              << "  PERFORM_TEST_IRQ       Performs IRQ test\n"
+              << "  PERFORM_TEST_UART      Performs UART test\n"
+              << "  PERFORM_TEST_SPI       Performs SPI test\n"
+              << "  PERFORM_TEST_RGMII     Performs RGMII test\n"
+              << "  PERFORM_TEST_MEMORY    Performs Memory test\n"
+              << "  PERFORM_TEST_FPGA      Performs FPGA test\n"
+              << "  -h, --help             Show this help message\n";
 }
 
 std::optional<std::string> parseCommandLineArguments(int argc, char* argv[]) {
@@ -98,6 +142,17 @@ std::optional<std::string> parseCommandLineArguments(int argc, char* argv[]) {
         {"CHANGE_CBIT_TIME", "Changes CBIT time"},
         {"READ_CBIT_TIME", "Reads CBIT time"},
         {"READ_PBIT", "Reads PBIT results"},
+        {"PERFORM_TEST_TEMP", "Performs Temperature test"},
+        {"PERFORM_TEST_FREESPACE", "Performs Free Space test"},
+        {"PERFORM_TEST_I2C", "Performs I2C test"},
+        {"PERFORM_TEST_RTC", "Performs RTC test"},
+        {"PERFORM_TEST_GPIO", "Performs GPIO test"},
+        {"PERFORM_TEST_IRQ", "Performs IRQ test"},
+        {"PERFORM_TEST_UART", "Performs UART test"},
+        {"PERFORM_TEST_SPI", "Performs SPI test"},
+        {"PERFORM_TEST_RGMII", "Performs RGMII test"},
+        {"PERFORM_TEST_MEMORY", "Performs Memory test"},
+        {"PERFORM_TEST_FPGA", "Performs FPGA test"},
         {"-h", "Show help"},
         {"--help", "Show help"}
     };

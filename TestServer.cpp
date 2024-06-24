@@ -51,6 +51,24 @@ std::string TestServer::handleCommand(const std::string &command) {
         return performTest("TEMP");
     } else if (cmd == "PERFORM_TEST_FREESPACE") {
         return performTest("FREESPACE");
+    } else if (cmd == "PERFORM_TEST_I2C") {
+        return performTest("I2C");
+    } else if (cmd == "PERFORM_TEST_RTC") {
+        return performTest("RTC");
+    } else if (cmd == "PERFORM_TEST_GPIO") {
+        return performTest("GPIO");
+    } else if (cmd == "PERFORM_TEST_IRQ") {
+        return performTest("IRQ");
+    } else if (cmd == "PERFORM_TEST_UART") {
+        return performTest("UART");
+    } else if (cmd == "PERFORM_TEST_SPI") {
+        return performTest("SPI");
+    } else if (cmd == "PERFORM_TEST_RGMII") {
+        return performTest("RGMII");
+    } else if (cmd == "PERFORM_TEST_MEMORY") {
+        return performTest("MEMORY");
+    } else if (cmd == "PERFORM_TEST_FPGA") {
+        return performTest("FPGA");
     } else {
         return createErrorResponse("Unknown command");
     }
@@ -111,13 +129,31 @@ std::string TestServer::performTest(const std::string &testName) {
 
     if (testName == "FREESPACE") {
         response["results"].append(testSPACE());
-        return response.toStyledString();
     } else if (testName == "TEMP") {
         response["results"].append(testTemperature());
-        return response.toStyledString();
+    } else if (testName == "I2C") {
+        response["results"].append(testI2C());
+    } else if (testName == "RTC") {
+        response["results"].append(testRTC());
+    } else if (testName == "GPIO") {
+        response["results"].append(testGPIO());
+    } else if (testName == "IRQ") {
+        response["results"].append(testIRQ());
+    } else if (testName == "UART") {
+        response["results"].append(testUART());
+    } else if (testName == "SPI") {
+        response["results"].append(testSPI());
+    } else if (testName == "RGMII") {
+        response["results"].append(testRGMII());
+    } else if (testName == "MEMORY") {
+        response["results"].append(testMEMORY());
+    } else if (testName == "FPGA") {
+        response["results"].append(testFPGA());
     } else {
-        return "";
+        return createErrorResponse("Unknown test");
     }
+    
+    return response.toStyledString();
 }
 
 std::string TestServer::performPBIT() {
