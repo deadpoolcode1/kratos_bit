@@ -6,17 +6,23 @@
 #include <thread>
 #include <atomic>
 
+struct PbitResults {
+    std::string timestamp;
+    Json::Value results;
+};
+
 class TestServer {
 public:
     TestServer();
     ~TestServer();
     std::string handleCommand(const std::string &command);
-    
+
 private:
     std::string handleReadLatestResults();
     std::string handlePerformIBIT();
     std::string handleChangeCBITTime(const Json::Value &root);
     std::string handleReadCBITTime();
+    std::string handleReadPBIT();
     std::string createErrorResponse(const std::string &message);
     std::string createSuccessResponse(const Json::Value &data);
     std::string performTest(const std::string &testName);
@@ -26,6 +32,7 @@ private:
 
     int cbitTime;
     std::string latestIbitResults;
+    PbitResults latestPbitResults;
     std::atomic<bool> cbitRunning;
     std::thread cbitThread;
 };

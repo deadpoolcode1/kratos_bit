@@ -14,7 +14,10 @@
 
 TestServer::TestServer() : cbitTime(10), cbitRunning(true), cbitThread(&TestServer::runCBIT, this) {
     // Perform PBIT on startup and store the results
-    latestIbitResults = performPBIT();
+    latestPbitResults.results = Json::arrayValue;
+    latestPbitResults.timestamp = getCurrentTimestamp();
+    latestPbitResults.results.append(testSPACE());
+    latestPbitResults.results.append(testTemperature());
 }
 
 TestServer::~TestServer() {
@@ -42,11 +45,13 @@ std::string TestServer::handleCommand(const std::string &command) {
         return handleChangeCBITTime(root);
     } else if (cmd == "READ_CBIT_TIME") {
         return handleReadCBITTime();
+    } else if (cmd == "READ_PBIT") {
+        return handleReadPBIT();
     } else if (cmd == "PERFORM_TEST_TEMP") {
         return performTest("TEMP");
     } else if (cmd == "PERFORM_TEST_FREESPACE") {
         return performTest("FREESPACE");
-    }else {
+    } else {
         return createErrorResponse("Unknown command");
     }
 }
@@ -79,6 +84,14 @@ std::string TestServer::handleReadCBITTime() {
     return response.toStyledString();
 }
 
+std::string TestServer::handleReadPBIT() {
+    Json::Value response;
+    response["status"] = "success";
+    response["results"] = latestPbitResults.results;
+    response["timestamp"] = latestPbitResults.timestamp;
+    return response.toStyledString();
+}
+
 std::string TestServer::createErrorResponse(const std::string &message) {
     Json::Value response;
     response["status"] = "error";
@@ -95,13 +108,13 @@ std::string TestServer::performTest(const std::string &testName) {
     Json::Value response;
     response["status"] = "success";
     response["results"] = Json::arrayValue;
-   
+
     if (testName == "FREESPACE") {
         response["results"].append(testSPACE());
         return response.toStyledString();
-    }else if (testName == "TEMP") {
+    } else if (testName == "TEMP") {
         response["results"].append(testTemperature());
-        return response.toStyledString();   
+        return response.toStyledString();
     } else {
         return "";
     }
@@ -112,15 +125,6 @@ std::string TestServer::performPBIT() {
     Json::Value response;
     response["status"] = "success";
     response["results"] = Json::arrayValue;
-    /*response["results"].append(testI2C());
-    response["results"].append(testRTC());
-    response["results"].append(testGPIO());
-    response["results"].append(testIRQ());
-    response["results"].append(testUART());
-    response["results"].append(testSPI());
-    response["results"].append(testRGMII());
-    response["results"].append(testMEMORY());
-    response["results"].append(testFPGA());*/
     response["results"].append(testSPACE());
     response["results"].append(testTemperature());
     response["timestamp"] = getCurrentTimestamp();
@@ -134,7 +138,6 @@ void TestServer::runCBIT() {
         cbitResults["status"] = "success";
         cbitResults["results"] = Json::arrayValue;
         cbitResults["results"].append(testSPACE());
-        //cbitResults["results"].append(testMEMORY());
         cbitResults["results"].append(testTemperature());
         cbitResults["timestamp"] = getCurrentTimestamp();
 

@@ -56,6 +56,8 @@ void performTest(const std::string& test) {
         root["new_time"] = 20; // Example new time value
     } else if (test == "READ_CBIT_TIME") {
         root["command"] = "READ_CBIT_TIME";
+    } else if (test == "READ_PBIT") {
+        root["command"] = "READ_PBIT";
     } else {
         std::cerr << "Unknown test: " << test << std::endl;
         return;
@@ -71,6 +73,7 @@ void performAllTests() {
     performTest("PERFORM_IBIT");
     performTest("CHANGE_CBIT_TIME");
     performTest("READ_CBIT_TIME");
+    performTest("READ_PBIT");
 }
 
 void showHelp() {
@@ -80,6 +83,7 @@ void showHelp() {
               << "  PERFORM_IBIT         Performs IBIT\n"
               << "  CHANGE_CBIT_TIME     Changes CBIT time\n"
               << "  READ_CBIT_TIME       Reads CBIT time\n"
+              << "  READ_PBIT            Reads PBIT results\n"
               << "  -h, --help           Show this help message\n";
 }
 
@@ -93,6 +97,7 @@ std::optional<std::string> parseCommandLineArguments(int argc, char* argv[]) {
         {"PERFORM_IBIT", "Performs IBIT"},
         {"CHANGE_CBIT_TIME", "Changes CBIT time"},
         {"READ_CBIT_TIME", "Reads CBIT time"},
+        {"READ_PBIT", "Reads PBIT results"},
         {"-h", "Show help"},
         {"--help", "Show help"}
     };
